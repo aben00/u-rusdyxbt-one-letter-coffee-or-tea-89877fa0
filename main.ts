@@ -17,7 +17,7 @@
 // Run outside the grader's container with:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const LETTER = 'A';
@@ -48,6 +48,14 @@ writeFileSync(outPath, LETTER, 'utf8');
 const written = readFileSync(outPath, 'utf8');
 if (written !== LETTER) {
   throw new Error(`wrote ${JSON.stringify(written)}, expected ${JSON.stringify(LETTER)}`);
+}
+
+// One more guard, at the byte level: the gate counts characters, and a
+// single ASCII letter is a single byte, so the file on disk must be
+// exactly 1 byte long. Anything else means the write added something.
+const size = statSync(outPath).size;
+if (size !== 1) {
+  throw new Error(`wrote ${size} bytes, expected 1`);
 }
 
 console.log(`wrote ${JSON.stringify(LETTER)} (1 char) to ${outPath}`);
